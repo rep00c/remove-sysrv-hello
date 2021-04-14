@@ -16,6 +16,7 @@ getCron(){
         if [[ $(echo "${cro}" | xargs file) =~ "ELF" ]] && [[ $(echo "${cro}" | xargs cat | strings | tail -n 1) =~ "UPX" ]] && [ $(echo "${cro}" | xargs stat | sed -n '2p' | awk -F ':' '{print $2}' | awk '{print $1 ">4000000"}' | bc) = 1 ]
         then
             cro1=${cro}
+            sed -i "/${cro}/d" /var/spool/cron/`whoami`
         fi
     done <<< $(echo "${cros}" | awk '{print $6}')
 }
@@ -70,7 +71,7 @@ cron1_size=$(echo "${cro1}" | xargs wc -c | awk '{print $1}')
 if [ $(echo "${cron1_size}>4000000" | bc) = 1 ]
 then
     echo -n "[!] killing Cron-virus file ans same-size files..."
-    find / -size ${cron1_size}c -type f -exec rm -v {} \;
+    find / -size ${cron1_size}c -type f -exec rm -v {} 2>/dev/null \;
     if [ "$?" -ne 0 ]
     then
         echo -e "  command failed\n"
@@ -79,3 +80,5 @@ then
         echo -e "  success\n"
     fi
 fi
+
+echo "[!] FINISHED"
